@@ -1,0 +1,48 @@
+---
+title: "submission 1"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+date: "2024-07-30"
+---
+
+```{r}
+library(ggplot2)
+library(tidyr)
+# Read datasets
+genes_df <- read.csv('/Users/zhangbingquan/Desktop/Fdn of data science/QBS103_GSE157103_genes.csv')
+ser_df <- read.csv('/Users/zhangbingquan/Desktop/Fdn of data science/QBS103_GSE157103_series_matrix.csv')
+
+# Select the row for A1BG and transform wide data to long data
+new_gene_long <- genes_df %>% dplyr::filter(X == 'A1BG') %>% gather(key = 'participant_id', value = 'expression', -X)
+
+# 1. Histogram of A1BG gene expression
+histogram_plot <- ggplot(new_gene_long, aes(x = expression)) +
+  geom_histogram(fill = "blue", color = "black") +
+  labs(title = "Histogram of A1BG Gene Expression", x = "Expression", y = "Frequency")
+print(histogram_plot)
+```
+
+```{r}
+# Select the required columns from the series_matrix
+new_ser <- ser_df %>% dplyr::select(participant_id, ferritin.ng.ml., sex, icu_status)
+data2 <- merge(new_ser,new_gene_long, by = "participant_id")
+
+data2$ferritin.ng.ml. <- as.numeric(data2$ferritin.ng.ml.)
+# 2 Scatterplot of A1BG expression and ferritin.ng.ml..
+scatter_plot <- ggplot(data2, aes(x = ferritin.ng.ml., y = expression)) +
+  geom_point(color = "red") +
+  labs(title = "Scatterplot of A1BG Expression and Ferritin(ng/ml).", x = "Ferritin(ng/ml).", y = "Expression") + scale_x_continuous(limits = c(0, 7000), breaks = seq (0,7000, by = 300))
+print(scatter_plot)
+
+```
+
+```{r}
+# 3 Boxplot of A1BG expression by sex and ICU status
+boxplot <- ggplot(data2, aes(x = interaction(sex, icu_status), y = expression, fill = icu_status)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of A1BG Expression by Sex and ICU Status", x = "Sex and ICU Status", y = "Expression")
+print(boxplot)
+```
