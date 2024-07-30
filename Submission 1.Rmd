@@ -1,0 +1,38 @@
+---
+---
+---
+
+```{r}
+# Read datasets
+genes_df <- read.csv('/Users/zhangbingquan/Desktop/Fdn of data science/QBS103_GSE157103_genes.csv')
+ser_df <- read.csv('/Users/zhangbingquan/Desktop/Fdn of data science/QBS103_GSE157103_series_matrix.csv')
+
+# Select the row for A1BG and transform wide data to long data
+new_gene_long <- genes_df %>% dplyr::filter(X == 'A1BG') %>% gather(key = 'participant_id', value = 'expression', -X)
+
+# 1. Histogram of A1BG gene expression
+histogram_plot <- ggplot(new_gene_long, aes(x = expression)) +
+  geom_histogram(fill = "blue", color = "black") +
+  labs(title = "Histogram of A1BG Gene Expression", x = "Expression", y = "Frequency")
+print(histogram_plot)
+```
+
+```{r}
+# Select the required columns from the series_matrix
+new_ser <- ser_df %>% dplyr::select(participant_id, charlson_score, sex, icu_status)
+data2 <- merge(new_ser,new_gene_long, by = "participant_id")
+
+# 2 Scatterplot of A1BG expression and Charlson score
+scatter_plot <- ggplot(data2, aes(x = charlson_score, y = expression)) +
+  geom_point(color = "red") +
+  labs(title = "Scatterplot of A1BG Expression and Charlson Score", x = "Charlson Score", y = "Expression")
+print(scatter_plot)
+```
+
+```{r}
+# 3 Boxplot of A1BG expression by sex and ICU status
+boxplot <- ggplot(data2, aes(x = interaction(sex, icu_status), y = expression, fill = icu_status)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of A1BG Expression by Sex and ICU Status", x = "Sex and ICU Status", y = "Expression")
+print(boxplot)
+```
